@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-deployment
+  namespace: gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+      - name: gateway
+        image: ayadinou/gateway-svc
+        ports:
+        - containerPort: 3000
+        env:
+        - name: HOSTAPP
+          value: application-deployment.application.svc.cluster.local
+        - name: HOSTAUTH
+          value: auth-deployment.auth.svc.cluster.local
+        - name: HOSTOFFER
+          value: offer-deployment.offer.svc.cluster.local
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            # mehdi yzi health
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+

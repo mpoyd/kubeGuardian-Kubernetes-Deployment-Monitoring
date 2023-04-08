@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db1
+  namespace: db-offer-statefulset
+spec:
+  selector:
+    matchLabels:
+      app: db1
+  serviceName: "db1"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: db1
+    spec:
+      containers:
+        - name: db1
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              value: "123"
+          volumeMounts:
+            - name: volume-db1
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: volume-db1
+          persistentVolumeClaim:
+            claimName: db1-pvc
+

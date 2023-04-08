@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+        - name: app
+          image: ayadinou/application-svc
+          ports:
+            - containerPort: 50052
+          env:
+            - name: HOSTDB
+              value: "mysql-clusterip.db-offer-statefulset.svc.cluster.local"
+            - name: PASSDB
+              value: "123"
+

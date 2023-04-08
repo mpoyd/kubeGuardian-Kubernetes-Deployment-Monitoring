@@ -1,0 +1,9 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: service
+
+  namespace: auth-deployment
+spec:
+  type: ExternalName
+  externalName: mysql-clusterip.db-offer-statefulset.svc.cluster.local

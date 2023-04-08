@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: application-deployment
+  namespace: application
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+        - name: app
+          image: ayadinou/application-svc
+          ports:
+            - containerPort: 50052
+          env:
+            - name: HOSTDB
+              value: "pgpool-svc.database-application.svc.cluster.local"
+            - name: PASSDB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: postgresql-password
+

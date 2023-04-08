@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: gateway-micro
+  name: gateway-micro
+  namespace: dep-gateway
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gateway-micro
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: gateway-micro
+    spec:
+      containers:
+      - image: ayadinou/gateway-svc
+        name: gateway-svc
+        env:
+          - name: HOSTAPP
+            value: app-svc_2000_TCP_ADDR
+          - name: HOSTAUTH
+            value: auth-svc_2001_TCP_ADDR
+          - name: HOSTOFFER
+            value: offer-svc_2000_TCP_ADDR

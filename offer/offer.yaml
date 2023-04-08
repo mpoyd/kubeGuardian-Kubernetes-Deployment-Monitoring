@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: offer-deployment
+  namespace: offer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: offer
+  template:
+    metadata:
+      labels:
+        app: offer
+    spec:
+      containers:
+        - name: offer
+          image: ayadinou/offer-svc
+          ports:
+            - containerPort: 50053
+          env:
+            - name: HOSTDB
+              value: "pgpool-svc.database-offer.svc.cluster.local"
+            - name: HOSTOFFER
+              value: "offer-svc.offer.svc.cluster.local"
+            - name: PASSDB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: postgresql-password
+
