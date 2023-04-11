@@ -5,6 +5,12 @@ metadata:
   namespace: auth
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
   selector:
     matchLabels:
       app: auth
@@ -13,9 +19,22 @@ spec:
       labels:
         app: auth
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
+        #allowPrivilegeEscalation: false
+        #capabilities:
+        #  drop: all
+        #readOnlyRootFilesystem: true
+        runAsNonRoot: true
+      terminationGracePeriodSeconds: 30
+
+
       containers:
         - name: auth
           image: ayadinou/auth-svc
+          imagePullPolicy: Always
           ports:
             - containerPort: 50051
           env:
@@ -26,4 +45,25 @@ spec:
                 secretKeyRef:
                   name: postgres-secrets
                   key: postgresql-password
+          livenessProbe:
+            tcpSocket:
+              port: 50051
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 50051
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 5
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
 
