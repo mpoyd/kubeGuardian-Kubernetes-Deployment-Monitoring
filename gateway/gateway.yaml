@@ -4,7 +4,14 @@ metadata:
   name: gateway-deployment
   namespace: gateway
 spec:
+
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
   selector:
     matchLabels:
       app: gateway
@@ -13,6 +20,16 @@ spec:
       labels:
         app: gateway
     spec:
+      securityContext:
+        runAsUser: 1001
+
+        runAsGroup: 1001
+        fsGroup: 1001
+       #readOnlyRootFilesystem: true
+        runAsNonRoot: true
+
+
+      terminationGracePeriodSeconds: 30      
       containers:
       - name: gateway
         image: ayadinou/gateway-svc
@@ -25,17 +42,30 @@ spec:
           value: auth-deployment.auth.svc.cluster.local
         - name: HOSTOFFER
           value: offer-deployment.offer.svc.cluster.local
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 3000
-          initialDelaySeconds: 5
-          periodSeconds: 10
         livenessProbe:
           httpGet:
-            path: /
-            # mehdi yzi health
-            port: 3000
-          initialDelaySeconds: 15
-          periodSeconds: 20
-
+            port: 3001
+            path: /health
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            port: 3001
+            path: /health
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 5
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["all"]

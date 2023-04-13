@@ -21,8 +21,6 @@ spec:
           env:
             - name: HOSTDB
               value: "pgpool-svc.database-offer.svc.cluster.local"
-            - name: HOSTOFFER
-              value: "offer-svc.offer.svc.cluster.local"
             - name: PASSDB
               valueFrom:
                 secretKeyRef:
