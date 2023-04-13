@@ -5,6 +5,12 @@ metadata:
   namespace: offer
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
   selector:
     matchLabels:
       app: offer
@@ -13,17 +19,54 @@ spec:
       labels:
         app: offer
     spec:
+      securityContext:
+        runAsUser: 1001
+
+        runAsGroup: 1001
+        fsGroup: 1001
+       #readOnlyRootFilesystem: true
+        runAsNonRoot: true
+      terminationGracePeriodSeconds: 30
+
       containers:
         - name: offer
-          image: ayadinou/offer-svc
+          image: mpoyd/kubeguardian-offer-svc@sha256:db1b04580f60d092bc87b1e153edbb98062e0583a8f854cc444a2507033572fb
           ports:
             - containerPort: 50053
           env:
             - name: HOSTDB
-              value: "pgpool-svc.database-offer.svc.cluster.local"
+              value: pgpool-svc.database-offer.svc.cluster.local
             - name: PASSDB
               valueFrom:
                 secretKeyRef:
                   name: postgres-secrets
                   key: postgresql-password
+          livenessProbe:
+            httpGet:
+              port: 3001
+              path: /health
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              port: 3001
+              path: /health
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 5
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["all"]
+ 
 

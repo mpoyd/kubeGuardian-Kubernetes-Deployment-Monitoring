@@ -32,9 +32,9 @@ spec:
       terminationGracePeriodSeconds: 30      
       containers:
       - name: gateway
-        image: ayadinou/gateway-svc
+        image: mpoyd/kubeguardian-api-gateway-svc:latest@sha256:298fce448939fc2463dfe09e9e9abcd01f67f4827e2b96ae6660f0fa49e0dcc5
         ports:
-        - containerPort: 3000
+        - containerPort: 3001
         env:
         - name: HOSTAPP
           value: application-deployment.application.svc.cluster.local
