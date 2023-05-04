@@ -1,4 +1,4 @@
 kubectl create ns offer
 kubectl apply -f .
-kubectl expose deployment offer-deployment -n offer
+kubectl expose deployment offer-deployment -n offer 
 
