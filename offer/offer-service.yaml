@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: offer-service
+  namespace: offer
+  labels:
+   job: offer-metrics
+   app: service-offer
+spec:
+  ports:
+  - name: metrics
+    port: 3001
+    protocol: TCP
+  - name: grpc
+    port: 50053
+    protocol: TCP
+    targetPort: 50053
+  selector:
+    app: offer
+status:
+  loadBalancer: {}

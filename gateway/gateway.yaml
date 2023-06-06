@@ -4,7 +4,14 @@ metadata:
   name: gateway-deployment
   namespace: gateway
 spec:
+
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
   selector:
     matchLabels:
       app: gateway
@@ -13,29 +20,53 @@ spec:
       labels:
         app: gateway
     spec:
+      securityContext:
+        runAsUser: 1001
+
+        runAsGroup: 1001
+        fsGroup: 1001
+       #readOnlyRootFilesystem: true
+        runAsNonRoot: true
+
+
+      terminationGracePeriodSeconds: 30      
       containers:
       - name: gateway
-        image: ayadinou/gateway-svc
+        image: mpoyd/kubeguardian-api-gateway-svc:latest@sha256:298fce448939fc2463dfe09e9e9abcd01f67f4827e2b96ae6660f0fa49e0dcc5
+        imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 3000
+        - containerPort: 3001
         env:
         - name: HOSTAPP
-          value: application-deployment.application.svc.cluster.local
+          value: application-service.application.svc.cluster.local
         - name: HOSTAUTH
-          value: auth-deployment.auth.svc.cluster.local
+          value: auth-service.auth.svc.cluster.local
         - name: HOSTOFFER
-          value: offer-deployment.offer.svc.cluster.local
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 3000
-          initialDelaySeconds: 5
-          periodSeconds: 10
+          value: offer-service.offer.svc.cluster.local
         livenessProbe:
           httpGet:
-            path: /
-            # mehdi yzi health
-            port: 3000
-          initialDelaySeconds: 15
-          periodSeconds: 20
-
+            port: 3001
+            path: /health
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            port: 3001
+            path: /health
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 5
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["all"]

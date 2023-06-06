@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: auth-service
+  namespace: auth
+  labels:
+    job: auth-metrics
+    app: service-auth
+spec:
+  ports:
+  - name: metrics
+    port: 3001
+    protocol: TCP
+  - name: grpc
+    port: 50051
+    protocol: TCP
+    targetPort: 50051
+  selector:
+    app: auth
+status:
+  loadBalancer: {}

@@ -20,23 +20,23 @@ spec:
         app: auth
     spec:
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 3000
-        fsGroup: 2000
-        #allowPrivilegeEscalation: false
-        #capabilities:
-        #  drop: all
-        #readOnlyRootFilesystem: true
+        runAsUser: 1001
+        
+        runAsGroup: 1001
+        fsGroup: 1001
+       #readOnlyRootFilesystem: true
         runAsNonRoot: true
       terminationGracePeriodSeconds: 30
 
 
       containers:
         - name: auth
-          image: ayadinou/auth-svc
-          imagePullPolicy: Always
+          image: mpoyd/kubeguardian-auth-svc:latest@sha256:a3bfde3eb8948275ea5031c63c7c4a33279bb61d598c606c99fa81d5c8b32716
+          imagePullPolicy: IfNotPresent
+          ports:
           ports:
             - containerPort: 50051
+            - containerPort: 3001
           env:
             - name: HOSTDB
               value: pgpool-svc.database-auth.svc.cluster.local
@@ -46,15 +46,17 @@ spec:
                   name: postgres-secrets
                   key: postgresql-password
           livenessProbe:
-            tcpSocket:
-              port: 50051
+            httpGet:
+              port: 3001
+              path: /health
             initialDelaySeconds: 10
             periodSeconds: 30
             timeoutSeconds: 5
             failureThreshold: 3
           readinessProbe:
-            tcpSocket:
-              port: 50051
+            httpGet:
+              port: 3001
+              path: /health
             initialDelaySeconds: 5
             periodSeconds: 10
             timeoutSeconds: 2
@@ -66,4 +68,8 @@ spec:
             requests:
               cpu: 250m
               memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["all"]
 
